@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCS Agent Strategy Framework</title>
+<style>
+@font-face {
+  font-family: 'SegoeUI';
+  src: local('Segoe UI Light'), url('//c.s-microsoft.com/static/fonts/segoe-ui/west-european/light/latest.woff2') format('woff2');
+  font-weight: 100;
+}
+@font-face {
+  font-family: 'SegoeUI';
+  src: local('Segoe UI Semilight'), url('//c.s-microsoft.com/static/fonts/segoe-ui/west-european/semilight/latest.woff2') format('woff2');
+  font-weight: 300;
+}
+@font-face {
+  font-family: 'SegoeUI';
+  src: local('Segoe UI'), url('//c.s-microsoft.com/static/fonts/segoe-ui/west-european/normal/latest.woff2') format('woff2');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'SegoeUI';
+  src: local('Segoe UI Semibold'), url('//c.s-microsoft.com/static/fonts/segoe-ui/west-european/semibold/latest.woff2') format('woff2');
+  font-weight: 600;
+}
+@font-face {
+  font-family: 'SegoeUI';
+  src: local('Segoe UI Bold'), url('//c.s-microsoft.com/static/fonts/segoe-ui/west-european/bold/latest.woff2') format('woff2');
+  font-weight: 700;
+}
+
+:root {
+  --f: 'SegoeUI','Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;
+  --bg: #f4f6fb;
+  --bg2: #ffffff;
+  --bg3: #eef1f8;
+  --surface: #ffffff;
+  --border: #dde2ef;
+  --border2: #c5cde3;
+  --text: #1a1f36;
+  --muted: #5a6282;
+  --light: #8892b0;
+  --accent: #0078d4;
+  --accent-dark: #005a9e;
+  --accent-light: #e8f2fc;
+
+  /* pillar colours */
+  --p1: #0f7b6c; --p1l: #e6f7f5; --p1m: #c0ede8;
+  --p2: #7c3aed; --p2l: #f3effe; --p2m: #ddd5fc;
+  --p3: #0078d4; --p3l: #e8f2fc; --p3m: #bdd9f5;
+  --p4: #d97706; --p4l: #fef3e2; --p4m: #fde3aa;
+  --p5: #db2777; --p5l: #fce7f3; --p5m: #f9c0dc;
+  --p6: #0891b2; --p6l: #e0f6fb; --p6m: #a5e3f0;
+  --p7: #dc2626; --p7l: #fef2f2; --p7m: #fecaca;
+  --p8: #059669; --p8l: #ecfdf5; --p8m: #a7f3d0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 17px; }
+body { background: var(--bg); color: var(--text); font-family: var(--f); line-height: 1.65; overflow-x: hidden; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem; height: 62px;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+.nav-logo {
+  font-family: var(--f); font-weight: 600; font-size: 1.05rem;
+  color: var(--text); text-decoration: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-logo-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--accent); display: flex; align-items: center;
+  justify-content: center;
+}
+.nav-logo-mark svg { width: 18px; height: 18px; fill: white; }
+.nav-links { display: flex; gap: 0.2rem; align-items: center; }
+.nav-links a {
+  font-family: var(--f); font-size: 0.88rem; font-weight: 400;
+  color: var(--muted); text-decoration: none;
+  padding: 6px 14px; border-radius: 6px; transition: all 0.15s;
+}
+.nav-links a:hover { color: var(--text); background: var(--bg3); }
+.nav-links a.active { color: var(--accent); font-weight: 600; }
+.nav-links .ncta-gone { display: none; }
+
+/* ── HERO ── */
+#home {
+  min-height: 100vh; display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  padding: 90px 2.5rem 5rem;
+  background: linear-gradient(145deg, #f0f4ff 0%, #ffffff 55%, #f5f0ff 100%);
+}
+.hero-pattern {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle, #0078d415 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse 80% 60% at 60% 40%, black, transparent);
+}
+.hero-blob1 {
+  position: absolute; top: -120px; right: -80px;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, #0078d412, transparent 70%);
+  pointer-events: none;
+}
+.hero-blob2 {
+  position: absolute; bottom: -100px; left: -60px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, #7c3aed0d, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner { max-width: 980px; margin: 0 auto; position: relative; z-index: 1; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 1.75rem;
+  background: var(--accent-light); border: 1px solid #bdd9f5;
+  border-radius: 20px; padding: 6px 16px;
+}
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+h1 {
+  font-family: var(--f);
+  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+  font-weight: 300; line-height: 1.1;
+  letter-spacing: -0.03em; margin-bottom: 1.5rem; color: var(--text);
+}
+h1 strong { font-weight: 700; color: var(--text); }
+h1 .accent { color: var(--accent); }
+
+.hero-desc {
+  font-size: 1.18rem; font-weight: 300; color: var(--muted);
+  max-width: 580px; line-height: 1.75; margin-bottom: 2.75rem;
+}
+.hero-pillars-strip {
+  display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem;
+}
+.hps-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 20px;
+  font-size: 0.84rem; font-weight: 600; text-decoration: none;
+  color: var(--c); background: var(--cl);
+  border: 1.5px solid color-mix(in srgb, var(--c) 30%, transparent);
+  transition: all 0.18s;
+}
+.hps-item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+
+/* ── SECTION COMMON ── */
+.section-inner { max-width: 1060px; margin: 0 auto; }
+.section-tag {
+  display: inline-block; font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 0.6rem;
+}
+h2 {
+  font-family: var(--f); font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  font-weight: 300; letter-spacing: -0.025em; margin-bottom: 0.6rem; color: var(--text);
+}
+h2 strong { font-weight: 700; }
+.section-sub { color: var(--muted); font-size: 1.05rem; font-weight: 300; margin-bottom: 2.5rem; max-width: 560px; line-height: 1.7; }
+
+/* ── ROADMAP ── */
+#guide {
+  padding: 6rem 2.5rem;
+  background: white;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.roadmap { display: flex; flex-direction: column; gap: 0; margin-top: 2.5rem; }
+.roadmap-stage {
+  display: flex; gap: 2rem; position: relative;
+}
+.stage-marker {
+  display: flex; flex-direction: column; align-items: center;
+  flex-shrink: 0; width: 52px;
+}
+.stage-num {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--sc); color: white;
+  font-size: 0.82rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; letter-spacing: 0.03em;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--sc) 35%, transparent);
+}
+.stage-line {
+  width: 2px; flex: 1; min-height: 40px;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--sc) 40%, transparent), color-mix(in srgb, var(--sc) 10%, transparent));
+  margin: 6px 0;
+}
+.stage-content {
+  flex: 1; padding-bottom: 3rem;
+}
+.roadmap-stage:last-child .stage-content { padding-bottom: 0.5rem; }
+.stage-badge {
+  display: inline-block; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 11px; border-radius: 12px; border: 1.5px solid;
+  margin-bottom: 0.7rem;
+}
+.stage-title {
+  font-size: 1.15rem; font-weight: 600; color: var(--text);
+  letter-spacing: -0.015em; margin-bottom: 0.7rem; line-height: 1.35;
+}
+.stage-desc {
+  font-size: 0.95rem; font-weight: 300; color: var(--muted);
+  line-height: 1.75; margin-bottom: 1.1rem; max-width: 680px;
+}
+.stage-learns {
+  display: flex; flex-direction: column; gap: 0;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden; max-width: 640px;
+}
+.stage-learn-item {
+  font-size: 0.88rem; color: var(--muted); font-weight: 300;
+  padding: 8px 14px 8px 36px; position: relative;
+  border-bottom: 1px solid var(--border); line-height: 1.5;
+  background: var(--bg);
+}
+.stage-learn-item:last-child { border-bottom: none; }
+.stage-learn-item::before {
+  content: '→'; position: absolute; left: 14px; top: 8px;
+  font-size: 0.78rem; color: var(--light);
+}
+.stage-pillar-ref {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 8px 14px; border-radius: 8px;
+  background: var(--cl); border: 1.5px solid color-mix(in srgb, var(--c) 25%, transparent);
+  font-size: 0.84rem;
+}
+.stage-pillar-ref span { color: var(--muted); font-weight: 300; }
+.stage-pillar-ref a {
+  color: var(--c); font-weight: 600; text-decoration: none;
+  transition: opacity 0.15s; cursor: pointer;
+}
+.stage-pillar-ref a:hover { opacity: 0.75; }
+
+/* ── PILLARS ── */
+#pillars { padding: 6rem 2.5rem; background: var(--bg); }
+.pillars-grid { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 2.5rem; }
+
+.pillar-card {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  transition: all 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.pillar-card:hover { border-color: var(--border2); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.pillar-card.open { box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
+
+.pillar-header {
+  display: flex; align-items: center; gap: 1.1rem;
+  padding: 1.4rem 2rem; cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.pillar-header:hover { background: var(--bg3); }
+.pillar-card.open .pillar-header { background: var(--bg3); }
+
+.pillar-num {
+  font-size: 0.72rem; font-weight: 700; color: var(--light);
+  min-width: 24px; letter-spacing: 0.05em;
+}
+.pillar-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.pillar-info { flex: 1; }
+.pillar-title { font-size: 1.06rem; font-weight: 600; margin-bottom: 3px; color: var(--text); letter-spacing: -0.01em; }
+.pillar-subtitle { font-size: 0.84rem; color: var(--muted); font-weight: 300; }
+.pillar-meta { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; padding-left: 1rem; flex-wrap: wrap; }
+.tag {
+  font-size: 0.72rem; font-weight: 600; padding: 3px 10px;
+  border-radius: 12px; border: 1.5px solid;
+  white-space: nowrap;
+}
+.pillar-chevron {
+  color: var(--light); transition: transform 0.28s ease;
+  flex-shrink: 0; margin-left: 0.75rem;
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--bg3); font-size: 0.75rem;
+}
+.pillar-card.open .pillar-chevron { transform: rotate(180deg); background: white; }
+
+.pillar-body { max-height: 0; overflow: hidden; transition: max-height 0.45s ease; }
+.pillar-body-inner {
+  padding: 2rem;
+  border-top: 1.5px solid var(--border);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;
+}
+@media(max-width:700px){ .pillar-body-inner { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.5rem; } }
+
+/* Left: description */
+.pillar-desc-col h3 {
+  font-size: 0.76rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--light); margin-bottom: 0.75rem;
+}
+.pillar-desc-col p {
+  font-size: 0.95rem; color: var(--muted); font-weight: 300;
+  line-height: 1.75; margin-bottom: 1.1rem;
+}
+.pillar-desc-col ul { list-style: none; padding: 0; margin-bottom: 1.25rem; }
+.pillar-desc-col ul li {
+  font-size: 0.9rem; color: var(--muted); font-weight: 300;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;
+}
+.pillar-desc-col ul li:last-child { border-bottom: none; }
+.li-check { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 3px; font-size: 0.6rem; color: white; }
+
+/* Right: sub-links */
+.pillar-links-col h3 {
+  font-size: 0.76rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--light); margin-bottom: 0.75rem;
+}
+.sub-section { margin-bottom: 1.25rem; }
+.sub-section-title {
+  font-size: 0.88rem; font-weight: 600; color: var(--text);
+  margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;
+}
+.sub-section-title::before { content: ''; display: block; width: 3px; height: 14px; border-radius: 2px; }
+.sub-links { list-style: none; padding: 0; }
+.sub-links li { padding: 2px 0; }
+.sub-links a {
+  font-size: 0.86rem; color: var(--muted); font-weight: 300;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 0; transition: all 0.15s; border-radius: 4px;
+}
+.sub-links a:hover { color: var(--accent); }
+.sub-links a::before { content: '↗'; font-size: 0.7rem; opacity: 0.5; flex-shrink: 0; }
+.sub-links a:hover::before { opacity: 1; }
+
+/* ── FOOTER ── */
+footer {
+  background: white; border-top: 1px solid var(--border);
+  padding: 3rem 2.5rem; text-align: center;
+}
+.footer-logo { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+footer p { font-size: 0.82rem; color: var(--light); font-weight: 300; }
+footer a { color: var(--accent); text-decoration: none; }
+
+/* ── REVEAL ── */
+.rev { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.rev.vis { opacity: 1; transform: none; }
+
+@media(max-width:768px){
+  .nav-links { display: none; }
+  .pillar-meta { display: none; }
+  .hero-pillars-strip { gap: 0.4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#home">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>
+    </div>
+    MCS Agent Framework
+  </a>
+  <div class="nav-links">
+    <a href="#home">Home</a>
+    <a href="#guide">Getting started</a>
+    <a href="#pillars">Framework</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="home">
+  <div class="hero-pattern"></div>
+  <div class="hero-blob1"></div>
+  <div class="hero-blob2"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><span class="eyebrow-dot"></span>Microsoft Copilot Studio · Enterprise Learning Framework</div>
+    <h1>Your complete guide to<br><strong>building agents <span class="accent">at scale.</span></strong></h1>
+    <p class="hero-desc">
+      This framework is a free, open educational resource for everyone learning to design, build, test, and operate enterprise agents in Microsoft Copilot Studio. Whether you're a first-time maker or an enterprise architect, everything you need is here — organized, opinionated, and practical.
+    </p>
+    <p class="hero-desc" style="margin-top:-1.5rem; font-size:1rem;">
+      Start with the <strong style="color:var(--text);font-weight:600">Getting Started roadmap</strong> below to understand the journey, then explore any of the eight framework pillars at your own pace.
+    </p>
+
+    <div class="hero-pillars-strip">
+      <a href="#p-discovery" class="hps-item" onclick="scrollTo('p-discovery')" style="--c:var(--p1);--cl:var(--p1l)">🔍 Scenario Discovery</a>
+      <a href="#p-design"    class="hps-item" onclick="scrollTo('p-design')"    style="--c:var(--p2);--cl:var(--p2l)">🧠 Design &amp; Dev</a>
+      <a href="#p-alm"       class="hps-item" onclick="scrollTo('p-alm')"       style="--c:var(--p3);--cl:var(--p3l)">🔄 ALM Strategy</a>
+      <a href="#p-test"      class="hps-item" onclick="scrollTo('p-test')"      style="--c:var(--p4);--cl:var(--p4l)">🧪 Test Strategy</a>
+      <a href="#p-observability" class="hps-item" onclick="scrollTo('p-observability')" style="--c:var(--p5);--cl:var(--p5l)">📡 Observability</a>
+      <a href="#p-release"   class="hps-item" onclick="scrollTo('p-release')"   style="--c:var(--p6);--cl:var(--p6l)">🚀 Release Strategy</a>
+      <a href="#p-security"  class="hps-item" onclick="scrollTo('p-security')"  style="--c:var(--p7);--cl:var(--p7l)">🛡️ Security &amp; Gov</a>
+      <a href="#p-rai"       class="hps-item" onclick="scrollTo('p-rai')"       style="--c:var(--p8);--cl:var(--p8l)">🌱 Responsible AI</a>
+    </div>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section id="guide">
+  <div class="section-inner">
+    <span class="section-tag">Getting started</span>
+    <h2>How to learn <strong>Copilot Studio</strong> for enterprise.</h2>
+    <p class="section-sub">A recommended learning path for teams adopting Microsoft Copilot Studio at scale. Follow the stages in order, or jump to wherever you are in your journey.</p>
+
+    <div class="roadmap">
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p1)">
+          <div class="stage-num">01</div>
+          <div class="stage-line"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p1);background:var(--p1l);border-color:var(--p1m)">Foundation</div>
+          <h3 class="stage-title">Understand the platform and discover your use cases</h3>
+          <p class="stage-desc">Before building anything, get a clear picture of what Microsoft Copilot Studio is, what kinds of problems it solves well, and which scenarios in your organisation are worth pursuing. This stage is about asking the right questions — not writing a single line of configuration yet.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">What is Copilot Studio and how does it fit in the Microsoft ecosystem</div>
+            <div class="stage-learn-item">The difference between classic, generative, and hybrid agents</div>
+            <div class="stage-learn-item">How to run a use case discovery workshop with stakeholders</div>
+            <div class="stage-learn-item">How to score and prioritise agent scenarios by value and feasibility</div>
+            <div class="stage-learn-item">When Copilot Studio is — and isn't — the right tool</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p1);--cl:var(--p1l)">
+            <span>Covered in</span>
+            <a href="#p-discovery" onclick="hO('p-discovery')">🔍 Scenario Discovery →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p2)">
+          <div class="stage-num">02</div>
+          <div class="stage-line"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p2);background:var(--p2l);border-color:var(--p2m)">Design</div>
+          <h3 class="stage-title">Design the agent before you build it</h3>
+          <p class="stage-desc">Good agents come from good design decisions made upfront. This stage teaches you how to architect conversation flows, choose the right orchestration model, plan your knowledge sources, and define how the agent handles edge cases — before touching the studio UI.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">How to design conversation flows and topic hierarchies</div>
+            <div class="stage-learn-item">Choosing between classic topics, generative answers, and AI Builder actions</div>
+            <div class="stage-learn-item">Planning your knowledge grounding strategy (SharePoint, Dataverse, APIs)</div>
+            <div class="stage-learn-item">Designing escalation paths and fallback behaviour</div>
+            <div class="stage-learn-item">Writing effective system instructions and prompts</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p2);--cl:var(--p2l)">
+            <span>Covered in</span>
+            <a href="#p-design" onclick="hO('p-design')">🧠 Design &amp; Development →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p3)">
+          <div class="stage-num">03</div>
+          <div class="stage-line"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p3);background:var(--p3l);border-color:var(--p3m)">Lifecycle</div>
+          <h3 class="stage-title">Set up your application lifecycle management (ALM)</h3>
+          <p class="stage-desc">Enterprise agents cannot live in a single environment forever. Before your first deployment, establish a proper dev → test → production structure with automated or semi-automated pipelines. This stage covers every ALM approach available in the Power Platform ecosystem — from lightweight manual processes to full CI/CD automation.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">Setting up a multi-environment topology (dev / test / UAT / prod)</div>
+            <div class="stage-learn-item">Solution management: what goes in a solution and why</div>
+            <div class="stage-learn-item">ALM using manual solution export and import</div>
+            <div class="stage-learn-item">ALM using Power Platform Pipelines (native, low-code)</div>
+            <div class="stage-learn-item">ALM using the Copilot Studio Accelerator</div>
+            <div class="stage-learn-item">ALM using Azure DevOps or GitHub Actions for full CI/CD</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p3);--cl:var(--p3l)">
+            <span>Covered in</span>
+            <a href="#p-alm" onclick="hO('p-alm')">🔄 ALM Strategy →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p4)">
+          <div class="stage-num">04</div>
+          <div class="stage-line"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p4);background:var(--p4l);border-color:var(--p4m)">Quality</div>
+          <h3 class="stage-title">Build a test strategy for your agent</h3>
+          <p class="stage-desc">Agents fail in ways traditional software doesn't — intent mismatches, hallucinated responses, broken multi-turn flows, data retrieval gaps. A proper test strategy catches these issues before users do. This stage walks through every level of agent testing, from functional topic tests to AI evaluation frameworks.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">The four levels of agent testing: unit, integration, E2E, and evaluation</div>
+            <div class="stage-learn-item">Using the Copilot Studio Test Kit for functional tests</div>
+            <div class="stage-learn-item">Evaluating generative response quality with LLM-as-judge patterns</div>
+            <div class="stage-learn-item">Building a regression test suite that runs in your ALM pipeline</div>
+            <div class="stage-learn-item">Load and concurrency testing for high-volume agents</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p4);--cl:var(--p4l)">
+            <span>Covered in</span>
+            <a href="#p-test" onclick="hO('p-test')">🧪 Test Strategy →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p5)">
+          <div class="stage-num">05</div>
+          <div class="stage-line"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p5);background:var(--p5l);border-color:var(--p5m)">Visibility</div>
+          <h3 class="stage-title">Instrument your agent for observability</h3>
+          <p class="stage-desc">Once live, you need eyes on your agent. Without telemetry, you're flying blind — you won't know where users drop off, which topics fail, or when something breaks. This stage covers everything from App Insights wiring to Power BI dashboards that tell a clear story to both technical teams and business stakeholders.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">Connecting Copilot Studio to Application Insights</div>
+            <div class="stage-learn-item">Defining the right KPIs: containment rate, CSAT, escalation rate, resolution rate</div>
+            <div class="stage-learn-item">Writing KQL queries to analyse conversation data</div>
+            <div class="stage-learn-item">Building Power BI dashboards for agent health reporting</div>
+            <div class="stage-learn-item">Setting up alert rules to detect failures early</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p5);--cl:var(--p5l)">
+            <span>Covered in</span>
+            <a href="#p-observability" onclick="hO('p-observability')">📡 Observability →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p6)">
+          <div class="stage-num">06</div>
+          <div class="stage-line"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p6);background:var(--p6l);border-color:var(--p6m)">Deployment</div>
+          <h3 class="stage-title">Release safely and manage change over time</h3>
+          <p class="stage-desc">Getting an agent into production is one thing — keeping it there reliably is another. This stage covers the release patterns, quality gates, and change management practices that separate one-off deployments from sustainable, continuously improved agent programs.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">Defining quality gates: what must pass before promoting to production</div>
+            <div class="stage-learn-item">Phased rollout and canary release patterns for agents</div>
+            <div class="stage-learn-item">Writing and running a rollback runbook when things go wrong</div>
+            <div class="stage-learn-item">User communication and change management for agent updates</div>
+            <div class="stage-learn-item">Building a Centre of Excellence to govern makers at scale</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p6);--cl:var(--p6l)">
+            <span>Covered in</span>
+            <a href="#p-release" onclick="hO('p-release')">🚀 Release Strategy →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p7)">
+          <div class="stage-num">07</div>
+          <div class="stage-line"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p7);background:var(--p7l);border-color:var(--p7m)">Protection</div>
+          <h3 class="stage-title">Secure and govern your agents and maker ecosystem</h3>
+          <p class="stage-desc">Enterprise agents touch sensitive data, business systems, and real users. Security and governance aren't optional extras — they're foundational. This stage covers how to lock down your environments, control what connectors makers can use, manage identities properly, and build a governance model that scales without slowing everyone down.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">Configuring Azure AD authentication and SSO for agents</div>
+            <div class="stage-learn-item">Designing DLP policies that protect data without blocking legitimate work</div>
+            <div class="stage-learn-item">Environment and RBAC strategy for isolating maker workstreams</div>
+            <div class="stage-learn-item">Using the CoE Starter Kit to govern your Copilot Studio estate</div>
+            <div class="stage-learn-item">Maker maturity models: how much governance to apply at each tier</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p7);--cl:var(--p7l)">
+            <span>Covered in</span>
+            <a href="#p-security" onclick="hO('p-security')">🛡️ Security &amp; Governance →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-stage rev">
+        <div class="stage-marker" style="--sc:var(--p8)">
+          <div class="stage-num">08</div>
+          <div class="stage-line" style="display:none"></div>
+        </div>
+        <div class="stage-content">
+          <div class="stage-badge" style="color:var(--p8);background:var(--p8l);border-color:var(--p8m)">Responsibility</div>
+          <h3 class="stage-title">Build agents that are trustworthy and responsible</h3>
+          <p class="stage-desc">Every agent that reaches a real user carries an implicit promise: it will behave safely, fairly, and transparently. This final stage covers Microsoft's Responsible AI principles applied specifically to Copilot Studio — giving makers the practical guardrails, checklists, and patterns they need to build agents that earn and keep user trust.</p>
+          <div class="stage-learns">
+            <div class="stage-learn-item">Applying Microsoft's six RAI principles to agent design decisions</div>
+            <div class="stage-learn-item">Content safety configuration: filtering harmful and sensitive outputs</div>
+            <div class="stage-learn-item">Designing for transparency — agents that are honest about what they are</div>
+            <div class="stage-learn-item">Human-in-the-loop patterns for decisions that carry real risk</div>
+            <div class="stage-learn-item">Running a Responsible AI impact assessment before deploying</div>
+          </div>
+          <div class="stage-pillar-ref" style="--c:var(--p8);--cl:var(--p8l)">
+            <span>Covered in</span>
+            <a href="#p-rai" onclick="hO('p-rai')">🌱 Responsible AI →</a>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /roadmap -->
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section id="pillars">
+  <div class="section-inner">
+    <span class="section-tag">The framework</span>
+    <h2>Eight pillars. <strong>One journey.</strong></h2>
+    <p class="section-sub">Expand any pillar to read the overview, understand what's covered, and navigate to individual topic articles.</p>
+
+    <div class="pillars-grid">
+
+      <!-- 01 SCENARIO DISCOVERY -->
+      <div class="pillar-card rev" id="p-discovery">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">01</span>
+          <div class="pillar-icon" style="background:var(--p1l)">🔍</div>
+          <div class="pillar-info">
+            <div class="pillar-title">Scenario Discovery</div>
+            <div class="pillar-subtitle">Find the right use cases and validate platform fit</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p1);border-color:var(--p1m);background:var(--p1l)">Start here</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>Before a single line of configuration, every successful agent starts with a clear-eyed assessment of whether the scenario is worth building and whether Copilot Studio is the right vehicle. This pillar gives teams structured tools to make that call objectively — avoiding wasted effort and mismatched expectations.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p1)">✓</span>How to run a use case discovery workshop with stakeholders</li>
+              <li><span class="li-check" style="background:var(--p1)">✓</span>Scoring a scenario: complexity, data readiness, user volume, ROI</li>
+              <li><span class="li-check" style="background:var(--p1)">✓</span>Platform fit matrix — MCS vs Azure Bot Service vs custom builds</li>
+              <li><span class="li-check" style="background:var(--p1)">✓</span>Common anti-patterns and when not to build an agent</li>
+              <li><span class="li-check" style="background:var(--p1)">✓</span>Building a value realization model before you commit</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>Articles &amp; guides</h3>
+            <div class="sub-section">
+              <div class="sub-section-title" style="--c:var(--p1)"><span style="background:var(--p1);width:3px;height:14px;border-radius:2px;display:block"></span>Use Case Identification</div>
+              <ul class="sub-links">
+                <li><a href="#">How to run a scenario discovery workshop</a></li>
+                <li><a href="#">Use case scoring rubric and template</a></li>
+                <li><a href="#">Top MCS use cases by industry</a></li>
+                <li><a href="#">Building a use case backlog</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p1);width:3px;height:14px;border-radius:2px;display:block"></span>Platform Fit Assessment</div>
+              <ul class="sub-links">
+                <li><a href="#">Is Copilot Studio right for this scenario?</a></li>
+                <li><a href="#">MCS vs Azure Bot Service — decision guide</a></li>
+                <li><a href="#">When to build vs. buy vs. configure</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p1);width:3px;height:14px;border-radius:2px;display:block"></span>Value Realization</div>
+              <ul class="sub-links">
+                <li><a href="#">ROI estimation framework for agents</a></li>
+                <li><a href="#">Defining success metrics before you build</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 02 DESIGN & DEVELOPMENT -->
+      <div class="pillar-card rev" id="p-design">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">02</span>
+          <div class="pillar-icon" style="background:var(--p2l)">🧠</div>
+          <div class="pillar-info">
+            <div class="pillar-title">Design &amp; Development</div>
+            <div class="pillar-subtitle">Architect and build high-quality, production-ready agents</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p2);border-color:var(--p2m);background:var(--p2l)">Design</span>
+            <span class="tag" style="color:var(--p2);border-color:var(--p2m);background:var(--p2l)">Build</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>The design phase determines the long-term quality of your agent. This pillar walks through conversation architecture, orchestration model selection, grounding strategies, extension patterns, and authoring best practices — giving teams a strong foundation regardless of scenario complexity.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p2)">✓</span>Choosing between classic, generative, and hybrid orchestration</li>
+              <li><span class="li-check" style="background:var(--p2)">✓</span>Topic design patterns for enterprise scenarios</li>
+              <li><span class="li-check" style="background:var(--p2)">✓</span>Knowledge grounding — SharePoint, Dataverse, custom sources</li>
+              <li><span class="li-check" style="background:var(--p2)">✓</span>Plugin and connector design best practices</li>
+              <li><span class="li-check" style="background:var(--p2)">✓</span>System prompt and instruction authoring</li>
+              <li><span class="li-check" style="background:var(--p2)">✓</span>Escalation, handoff, and fallback design</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>Articles &amp; guides</h3>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p2);width:3px;height:14px;border-radius:2px;display:block"></span>Orchestration Design</div>
+              <ul class="sub-links">
+                <li><a href="#">Classic vs. generative vs. hybrid — choosing your model</a></li>
+                <li><a href="#">Multi-topic orchestration patterns</a></li>
+                <li><a href="#">Designing conversation flows for enterprise users</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p2);width:3px;height:14px;border-radius:2px;display:block"></span>Knowledge &amp; Grounding</div>
+              <ul class="sub-links">
+                <li><a href="#">Grounding agents on SharePoint &amp; OneDrive</a></li>
+                <li><a href="#">Using Dataverse as a knowledge source</a></li>
+                <li><a href="#">Custom data connectors and REST APIs</a></li>
+                <li><a href="#">Chunking and retrieval strategy</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p2);width:3px;height:14px;border-radius:2px;display:block"></span>Extensions &amp; Plugins</div>
+              <ul class="sub-links">
+                <li><a href="#">Building and registering plugins</a></li>
+                <li><a href="#">Power Automate flow integration</a></li>
+                <li><a href="#">AI Builder model integration</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p2);width:3px;height:14px;border-radius:2px;display:block"></span>Authoring Best Practices</div>
+              <ul class="sub-links">
+                <li><a href="#">System prompt engineering for MCS</a></li>
+                <li><a href="#">Entity extraction and slot filling</a></li>
+                <li><a href="#">Escalation and human handoff design</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 03 ALM STRATEGY -->
+      <div class="pillar-card rev" id="p-alm">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">03</span>
+          <div class="pillar-icon" style="background:var(--p3l)">🔄</div>
+          <div class="pillar-info">
+            <div class="pillar-title">ALM Strategy</div>
+            <div class="pillar-subtitle">Application lifecycle management from dev to production</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p3);border-color:var(--p3m);background:var(--p3l)">ALM</span>
+            <span class="tag" style="color:var(--p3);border-color:var(--p3m);background:var(--p3l)">DevOps</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>Enterprise agents cannot live in a single environment. A robust ALM strategy ensures agents can be developed, tested, promoted, and maintained with the same rigour as any enterprise software. Copilot Studio supports multiple approaches — from manual solution exports to fully automated CI/CD pipelines — and this pillar covers all of them.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p3)">✓</span>Environment strategy: dev / test / UAT / production topology</li>
+              <li><span class="li-check" style="background:var(--p3)">✓</span>Solution management: managed vs. unmanaged layers</li>
+              <li><span class="li-check" style="background:var(--p3)">✓</span>Choosing the right ALM approach for your team's maturity</li>
+              <li><span class="li-check" style="background:var(--p3)">✓</span>Configuration data migration and environment variables</li>
+              <li><span class="li-check" style="background:var(--p3)">✓</span>RBAC, DLP policies, and connection references</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>ALM approaches — pick yours</h3>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p3);width:3px;height:14px;border-radius:2px;display:block"></span>Manual Solution Deployment</div>
+              <ul class="sub-links">
+                <li><a href="#">Exporting and importing solutions manually</a></li>
+                <li><a href="#">Managing environment variables across stages</a></li>
+                <li><a href="#">Configuration data migration with Configuration Migration Tool</a></li>
+                <li><a href="#">Common pitfalls with manual deployments</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p3);width:3px;height:14px;border-radius:2px;display:block"></span>Power Platform Pipelines</div>
+              <ul class="sub-links">
+                <li><a href="#">Setting up Power Platform Pipelines for MCS agents</a></li>
+                <li><a href="#">Configuring pipeline stages and approvals</a></li>
+                <li><a href="#">Running pre-deployment checks with pipelines</a></li>
+                <li><a href="#">Pipeline limitations and when to go further</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p3);width:3px;height:14px;border-radius:2px;display:block"></span>Copilot Studio Accelerator</div>
+              <ul class="sub-links">
+                <li><a href="#">What is the Copilot Studio Accelerator?</a></li>
+                <li><a href="#">Setting up the Accelerator in your tenant</a></li>
+                <li><a href="#">Using Accelerator-based ALM workflows</a></li>
+                <li><a href="#">Extending the Accelerator for custom needs</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p3);width:3px;height:14px;border-radius:2px;display:block"></span>Azure DevOps</div>
+              <ul class="sub-links">
+                <li><a href="#">Setting up Azure DevOps pipelines for Power Platform</a></li>
+                <li><a href="#">YAML pipeline templates for MCS agents</a></li>
+                <li><a href="#">Automated solution export and import tasks</a></li>
+                <li><a href="#">Branch strategy and environment mapping</a></li>
+                <li><a href="#">Running Power Apps Checker in the pipeline</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p3);width:3px;height:14px;border-radius:2px;display:block"></span>GitHub Actions</div>
+              <ul class="sub-links">
+                <li><a href="#">Power Platform GitHub Actions overview</a></li>
+                <li><a href="#">Workflow templates for MCS agent deployment</a></li>
+                <li><a href="#">Secrets management and service principal setup</a></li>
+                <li><a href="#">Pull request validation workflows</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 04 TEST STRATEGY -->
+      <div class="pillar-card rev" id="p-test">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">04</span>
+          <div class="pillar-icon" style="background:var(--p4l)">🧪</div>
+          <div class="pillar-info">
+            <div class="pillar-title">Test Strategy</div>
+            <div class="pillar-subtitle">Validate quality, accuracy, and reliability at every stage</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p4);border-color:var(--p4m);background:var(--p4l)">Quality</span>
+            <span class="tag" style="color:var(--p4);border-color:var(--p4m);background:var(--p4l)">Eval</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>Testing conversational agents is fundamentally different from testing traditional software. Intent classification, generative response quality, multi-turn conversation flows, and data retrieval accuracy all require different test approaches. This pillar covers the full test spectrum — from functional topic testing to AI evaluation frameworks.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p4)">✓</span>Test levels: unit, integration, end-to-end, and evaluation</li>
+              <li><span class="li-check" style="background:var(--p4)">✓</span>Intent accuracy and topic coverage analysis</li>
+              <li><span class="li-check" style="background:var(--p4)">✓</span>LLM-as-judge evaluation for generative responses</li>
+              <li><span class="li-check" style="background:var(--p4)">✓</span>Regression testing — preventing quality degradation on redeploy</li>
+              <li><span class="li-check" style="background:var(--p4)">✓</span>Load and concurrency testing approaches</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>Test approaches</h3>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p4);width:3px;height:14px;border-radius:2px;display:block"></span>Copilot Studio Test Kit</div>
+              <ul class="sub-links">
+                <li><a href="#">What is the Copilot Studio Test Kit?</a></li>
+                <li><a href="#">Setting up and configuring the Test Kit</a></li>
+                <li><a href="#">Writing test cases for topic flows</a></li>
+                <li><a href="#">Running tests and interpreting results</a></li>
+                <li><a href="#">Integrating Test Kit into ALM pipelines</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p4);width:3px;height:14px;border-radius:2px;display:block"></span>Evaluation Frameworks</div>
+              <ul class="sub-links">
+                <li><a href="#">LLM-as-judge evaluation patterns</a></li>
+                <li><a href="#">Relevance, groundedness, and coherence metrics</a></li>
+                <li><a href="#">Azure AI Evaluation SDK integration</a></li>
+                <li><a href="#">Building a golden dataset for regression</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p4);width:3px;height:14px;border-radius:2px;display:block"></span>App Insights-based Testing</div>
+              <ul class="sub-links">
+                <li><a href="#">Using conversation logs for test data</a></li>
+                <li><a href="#">Automated anomaly detection post-deploy</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p4);width:3px;height:14px;border-radius:2px;display:block"></span>Load &amp; Regression Testing</div>
+              <ul class="sub-links">
+                <li><a href="#">Load testing Copilot Studio agents</a></li>
+                <li><a href="#">Regression test strategy on redeploy</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 05 OBSERVABILITY -->
+      <div class="pillar-card rev" id="p-observability">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">05</span>
+          <div class="pillar-icon" style="background:var(--p5l)">📡</div>
+          <div class="pillar-info">
+            <div class="pillar-title">Observability</div>
+            <div class="pillar-subtitle">Monitor, understand, and continuously improve agents in production</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p5);border-color:var(--p5m);background:var(--p5l)">Monitor</span>
+            <span class="tag" style="color:var(--p5);border-color:var(--p5m);background:var(--p5l)">Analytics</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>An unmonitored agent is a liability. Once in production, you need to know whether your agent is actually helping users, where it's failing, and what to improve next. This pillar covers telemetry setup, KPI definition, dashboards, and the feedback loops that drive continuous improvement.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p5)">✓</span>Wiring up Application Insights to your agent</li>
+              <li><span class="li-check" style="background:var(--p5)">✓</span>Defining KPIs: containment rate, CSAT, escalation rate, resolution rate</li>
+              <li><span class="li-check" style="background:var(--p5)">✓</span>Custom telemetry events and conversation logging</li>
+              <li><span class="li-check" style="background:var(--p5)">✓</span>Detecting failure patterns and anomalies early</li>
+              <li><span class="li-check" style="background:var(--p5)">✓</span>Building Power BI dashboards for agent health</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>Observability tooling</h3>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p5);width:3px;height:14px;border-radius:2px;display:block"></span>Application Insights Integration</div>
+              <ul class="sub-links">
+                <li><a href="#">Connecting Copilot Studio to Application Insights</a></li>
+                <li><a href="#">Custom event schema for agent telemetry</a></li>
+                <li><a href="#">Querying conversation data with KQL</a></li>
+                <li><a href="#">Setting up alert rules for failure spikes</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p5);width:3px;height:14px;border-radius:2px;display:block"></span>Copilot Studio Native Analytics</div>
+              <ul class="sub-links">
+                <li><a href="#">Understanding the built-in analytics dashboard</a></li>
+                <li><a href="#">Topic performance and drop-off analysis</a></li>
+                <li><a href="#">CSAT and satisfaction score configuration</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p5);width:3px;height:14px;border-radius:2px;display:block"></span>Power BI Dashboards</div>
+              <ul class="sub-links">
+                <li><a href="#">Power BI agent health dashboard template</a></li>
+                <li><a href="#">Connecting App Insights to Power BI</a></li>
+                <li><a href="#">Building executive-level agent reporting</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p5);width:3px;height:14px;border-radius:2px;display:block"></span>Azure Monitor &amp; Alerts</div>
+              <ul class="sub-links">
+                <li><a href="#">Azure Monitor integration for agents</a></li>
+                <li><a href="#">Alert runbook for production incidents</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 06 RELEASE STRATEGY -->
+      <div class="pillar-card rev" id="p-release">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">06</span>
+          <div class="pillar-icon" style="background:var(--p6l)">🚀</div>
+          <div class="pillar-info">
+            <div class="pillar-title">Release Strategy</div>
+            <div class="pillar-subtitle">Ship safely, roll out confidently, and recover quickly</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p6);border-color:var(--p6m);background:var(--p6l)">Release</span>
+            <span class="tag" style="color:var(--p6);border-color:var(--p6m);background:var(--p6l)">Rollout</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>A good release strategy is the difference between confident deployment and firefighting in production. This pillar covers promotion gates, phased rollout patterns, rollback procedures, and the change management practices that help users adopt new agents smoothly.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p6)">✓</span>Defining promotion gates between environments</li>
+              <li><span class="li-check" style="background:var(--p6)">✓</span>Canary releases and feature flag patterns in MCS</li>
+              <li><span class="li-check" style="background:var(--p6)">✓</span>Rollback runbook and recovery procedures</li>
+              <li><span class="li-check" style="background:var(--p6)">✓</span>Change management and user communication strategy</li>
+              <li><span class="li-check" style="background:var(--p6)">✓</span>Release readiness checklist before go-live</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>Release patterns</h3>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p6);width:3px;height:14px;border-radius:2px;display:block"></span>Promotion Gates &amp; Readiness</div>
+              <ul class="sub-links">
+                <li><a href="#">Defining quality gates for environment promotion</a></li>
+                <li><a href="#">Release readiness checklist for MCS agents</a></li>
+                <li><a href="#">Approval workflows for production promotion</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p6);width:3px;height:14px;border-radius:2px;display:block"></span>Phased Rollout Patterns</div>
+              <ul class="sub-links">
+                <li><a href="#">Canary deployment for Copilot Studio agents</a></li>
+                <li><a href="#">Audience targeting and phased rollout</a></li>
+                <li><a href="#">Feature gating with environment variables</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p6);width:3px;height:14px;border-radius:2px;display:block"></span>Rollback &amp; Recovery</div>
+              <ul class="sub-links">
+                <li><a href="#">Rollback runbook template</a></li>
+                <li><a href="#">Managed solution rollback strategy</a></li>
+                <li><a href="#">Incident communication playbook</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p6);width:3px;height:14px;border-radius:2px;display:block"></span>Change Management</div>
+              <ul class="sub-links">
+                <li><a href="#">User communication and adoption strategy</a></li>
+                <li><a href="#">Training makers for new releases</a></li>
+                <li><a href="#">CoE governance model for agent releases</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 07 SECURITY & GOVERNANCE -->
+      <div class="pillar-card rev" id="p-security">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">07</span>
+          <div class="pillar-icon" style="background:var(--p7l)">🛡️</div>
+          <div class="pillar-info">
+            <div class="pillar-title">Security &amp; Governance</div>
+            <div class="pillar-subtitle">Protect your agents, data, and users at enterprise scale</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p7);border-color:var(--p7m);background:var(--p7l)">Security</span>
+            <span class="tag" style="color:var(--p7);border-color:var(--p7m);background:var(--p7l)">Governance</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>Enterprise agents interact with sensitive business data, user identities, and internal systems. Security and governance cannot be afterthoughts. This pillar covers authentication, data loss prevention, connector governance, environment controls, and the CoE model that keeps makers operating within safe boundaries.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p7)">✓</span>Authentication patterns: AAD, Azure B2C, manual</li>
+              <li><span class="li-check" style="background:var(--p7)">✓</span>Data Loss Prevention (DLP) policies for MCS connectors</li>
+              <li><span class="li-check" style="background:var(--p7)">✓</span>RBAC and role-based access in Copilot Studio</li>
+              <li><span class="li-check" style="background:var(--p7)">✓</span>Secure handling of sensitive data in conversations</li>
+              <li><span class="li-check" style="background:var(--p7)">✓</span>Centre of Excellence model for maker governance</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>Security topics</h3>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p7);width:3px;height:14px;border-radius:2px;display:block"></span>Authentication &amp; Identity</div>
+              <ul class="sub-links">
+                <li><a href="#">Configuring Azure AD authentication for agents</a></li>
+                <li><a href="#">Azure B2C for external-facing agents</a></li>
+                <li><a href="#">SSO integration in Teams and SharePoint</a></li>
+                <li><a href="#">Service principal and secret management</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p7);width:3px;height:14px;border-radius:2px;display:block"></span>Data Loss Prevention</div>
+              <ul class="sub-links">
+                <li><a href="#">DLP policy design for Copilot Studio</a></li>
+                <li><a href="#">Classifying connectors: business vs. non-business</a></li>
+                <li><a href="#">Blocking sensitive connector combinations</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p7);width:3px;height:14px;border-radius:2px;display:block"></span>Tenant &amp; Environment Controls</div>
+              <ul class="sub-links">
+                <li><a href="#">Environment strategy for isolation and access control</a></li>
+                <li><a href="#">Admin centre governance overview</a></li>
+                <li><a href="#">CoE Starter Kit for MCS governance</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p7);width:3px;height:14px;border-radius:2px;display:block"></span>Maker Governance (CoE)</div>
+              <ul class="sub-links">
+                <li><a href="#">Setting up a Centre of Excellence for MCS</a></li>
+                <li><a href="#">Maker maturity model and tier-based governance</a></li>
+                <li><a href="#">Agent approval and publishing workflows</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 08 RESPONSIBLE AI -->
+      <div class="pillar-card rev" id="p-rai">
+        <div class="pillar-header" onclick="tP(this)">
+          <span class="pillar-num">08</span>
+          <div class="pillar-icon" style="background:var(--p8l)">🌱</div>
+          <div class="pillar-info">
+            <div class="pillar-title">Responsible AI</div>
+            <div class="pillar-subtitle">Build agents that are fair, safe, transparent, and trustworthy</div>
+          </div>
+          <div class="pillar-meta">
+            <span class="tag" style="color:var(--p8);border-color:var(--p8m);background:var(--p8l)">RAI</span>
+            <span class="tag" style="color:var(--p8);border-color:var(--p8m);background:var(--p8l)">Ethics</span>
+          </div>
+          <span class="pillar-chevron">▾</span>
+        </div>
+        <div class="pillar-body"><div class="pillar-body-inner">
+          <div class="pillar-desc-col">
+            <h3>Overview</h3>
+            <p>Deploying AI-powered agents at enterprise scale comes with real responsibilities. This pillar covers Microsoft's Responsible AI principles as applied to Copilot Studio agents — covering content safety, fairness, transparency, human oversight, and the practical guardrails makers need to build trustworthy agents that meet both user and organizational expectations.</p>
+            <h3 style="margin-top:1rem">What you'll learn</h3>
+            <ul>
+              <li><span class="li-check" style="background:var(--p8)">✓</span>Applying Microsoft's RAI principles to agent design</li>
+              <li><span class="li-check" style="background:var(--p8)">✓</span>Content safety — filtering harmful, sensitive, or biased outputs</li>
+              <li><span class="li-check" style="background:var(--p8)">✓</span>Transparency and explainability in agent responses</li>
+              <li><span class="li-check" style="background:var(--p8)">✓</span>Human oversight and meaningful escalation design</li>
+              <li><span class="li-check" style="background:var(--p8)">✓</span>RAI impact assessment for agent scenarios</li>
+            </ul>
+          </div>
+          <div class="pillar-links-col">
+            <h3>RAI topics</h3>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p8);width:3px;height:14px;border-radius:2px;display:block"></span>RAI Principles in Practice</div>
+              <ul class="sub-links">
+                <li><a href="#">Microsoft RAI principles overview for makers</a></li>
+                <li><a href="#">RAI impact assessment template for agents</a></li>
+                <li><a href="#">Responsible AI checklist before deployment</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p8);width:3px;height:14px;border-radius:2px;display:block"></span>Content Safety &amp; Guardrails</div>
+              <ul class="sub-links">
+                <li><a href="#">Configuring content moderation in MCS</a></li>
+                <li><a href="#">Preventing hallucinations with grounding controls</a></li>
+                <li><a href="#">Topic-level content filters and safe topics</a></li>
+                <li><a href="#">Handling sensitive topics: health, legal, financial</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p8);width:3px;height:14px;border-radius:2px;display:block"></span>Transparency &amp; Fairness</div>
+              <ul class="sub-links">
+                <li><a href="#">Designing transparent agent responses</a></li>
+                <li><a href="#">Disclosing AI identity to users</a></li>
+                <li><a href="#">Bias detection and fairness evaluation</a></li>
+              </ul>
+            </div>
+            <div class="sub-section">
+              <div class="sub-section-title"><span style="background:var(--p8);width:3px;height:14px;border-radius:2px;display:block"></span>Human Oversight</div>
+              <ul class="sub-links">
+                <li><a href="#">Designing meaningful human escalation paths</a></li>
+                <li><a href="#">Human-in-the-loop patterns for high-risk decisions</a></li>
+                <li><a href="#">Audit logging for accountability</a></li>
+              </ul>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MCS Agent Framework</div>
+  <p>Built for enterprise makers · Hosted on <a href="https://pages.github.com" target="_blank">GitHub Pages</a> · Contributions welcome</p>
+  <p style="margin-top:0.35rem;font-size:0.75rem">Not an official Microsoft product · Community-maintained by the Copilot Acceleration Team</p>
+</footer>
+
+<script>
+function hO(id){
+  document.querySelectorAll('.pillar-card').forEach(c=>c.style.outline='');
+  const card = document.getElementById(id);
+  if(!card) return;
+  card.style.outline = '2.5px solid var(--accent)';
+  const body = card.querySelector('.pillar-body');
+  if(!card.classList.contains('open')){ card.classList.add('open'); body.style.maxHeight = body.scrollHeight+'px'; }
+  setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}), 120);
+}
+function tP(h){
+  const card = h.closest('.pillar-card'), body = card.querySelector('.pillar-body'), isOpen = card.classList.contains('open');
+  document.querySelectorAll('.pillar-card').forEach(c=>{ c.classList.remove('open'); c.querySelector('.pillar-body').style.maxHeight='0px'; });
+  if(!isOpen){ card.classList.add('open'); body.style.maxHeight = body.scrollHeight+'px'; }
+}
+document.querySelectorAll('.pillar-body').forEach(b=>b.style.maxHeight='0px');
+
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } });
+}, {threshold:0.07});
+document.querySelectorAll('.rev').forEach(el=>io.observe(el));
+
+window.addEventListener('scroll',()=>{
+  let c='home';
+  ['home','guide','pillars'].forEach(id=>{ const el=document.getElementById(id); if(el&&scrollY>=el.offsetTop-100) c=id; });
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+c));
+},{passive:true});
+</script>
+</body>
+</html>
